@@ -27,7 +27,10 @@ function fjCurrent($s){
 }
 function fjStatus(){
  $c=fjConfig(); $s=fjGet('/api/fppd/status'); $p=fjCurrent($s);
- return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$p!=='','currentPlaylist'=>$p));
+ // Scheduled/background playback must remain selectable. Only lock the guest UI
+ // while an allowed Jukebox playlist is the active playlist.
+ $busy=($p!=='' && in_array($p,$c['allowedPlaylists'],true));
+ return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$busy,'currentPlaylist'=>$p,'scheduledPlayback'=>($p!=='' && !$busy)));
 }
 function fjRequest(){
  global $settings;
