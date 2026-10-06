@@ -45,7 +45,9 @@ function fjRequest(){
  // Mark this specific request so scheduled playback (even of an allowed playlist)
  // does not lock the guest interface.
  file_put_contents(fjLockFile(),$p,LOCK_EX);
- $r=fjGet('/api/command/Start%20Playlist/'.rawurlencode($p).'/false/false/true');
+ // Insert Playlist Immediate pauses the running scheduled playlist, runs the guest
+ // selection once, then resumes the original playlist at the exact paused position.
+ $r=fjGet('/api/command/Insert%20Playlist%20Immediate/'.rawurlencode($p).'/0/0/false');
  if($r===null){if(is_file(fjLockFile()))@unlink(fjLockFile());http_response_code(502);return json(array('ok'=>false,'message'=>'FPP did not accept the request.'));}
  if(isset($settings['logDirectory']))file_put_contents($settings['logDirectory'].'/plugin-fpp-ferris-jukebox.log',date('c').' requested approved playlist: '.$p."\n",FILE_APPEND|LOCK_EX);
  return json(array('ok'=>true,'playlist'=>$p));
