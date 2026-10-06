@@ -1,36 +1,40 @@
 <?php
 $configFile=__DIR__.'/jukebox-config.json';
+$artDir=__DIR__.'/artwork'; if(!is_dir($artDir))@mkdir($artDir,0775,true);
 $config=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array());
 if(is_file($configFile)){ $x=json_decode(file_get_contents($configFile),true); if(is_array($x))$config=array_merge($config,$x); }
 $dir=isset($settings['playlistDirectory'])?$settings['playlistDirectory']:'/home/fpp/media/playlists';
-$available=array();
-foreach(glob($dir.'/*.json')?:array() as $f)$available[]=pathinfo($f,PATHINFO_FILENAME);
+$available=array(); foreach(glob($dir.'/*.json')?:array() as $f)$available[]=pathinfo($f,PATHINFO_FILENAME);
 natcasesort($available); $available=array_values($available);
-$msg='';
+function fjArtFile($dir,$p){foreach(array('jpg','jpeg','png','webp') as $e){$f=$dir.'/'.$p.'.'.$e;if(is_file($f))return $f;}return '';}
+function fjSafeUpload($tmp,$dest,$ext){$info=@getimagesize($tmp);if(!$info)return false;$ok=array(IMAGETYPE_JPEG=>'jpg',IMAGETYPE_PNG=>'png',IMAGETYPE_WEBP=>'webp');if(!isset($ok[$info[2]]))return false;return @move_uploaded_file($tmp,$dest.'.'.$ok[$info[2]]);}
+$msg='';$err='';
 if($_SERVER['REQUEST_METHOD']==='POST'){
- $sel=isset($_POST['playlists'])&&is_array($_POST['playlists'])?$_POST['playlists']:array();
- $config=array(
-  'title'=>trim($_POST['title']??'')?:"Ferris & Heidi's Haunted Pirate Cove",
-  'subtitle'=>trim($_POST['subtitle']??'')?:'Choose Your Adventure',
-  'enabled'=>isset($_POST['enabled']),
-  'allowedPlaylists'=>array_values(array_intersect($available,$sel))
- );
- file_put_contents($configFile,json_encode($config,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),LOCK_EX);
- $msg='Jukebox settings saved.';
+ if(isset($_POST['art_playlist'])){
+  $p=$_POST['art_playlist']; if(!in_array($p,$available,true))$err='Unknown playlist.';
+  elseif(isset($_POST['delete_art'])){$old=fjArtFile($artDir,$p);if($old&&@unlink($old))$msg='Artwork removed for '.$p;else $err='No artwork to remove.';}
+  elseif(!isset($_FILES['artwork'])||$_FILES['artwork']['error']!==UPLOAD_ERR_OK)$err='Choose a JPEG, PNG, or WebP image first.';
+  elseif($_FILES['artwork']['size']>8*1024*1024)$err='Artwork must be 8 MB or smaller.';
+  else{foreach(array('jpg','jpeg','png','webp') as $e)@unlink($artDir.'/'.$p.'.'.$e);if(fjSafeUpload($_FILES['artwork']['tmp_name'],$artDir.'/'.$p,''))$msg='Artwork updated for '.$p;else $err='That file is not a supported image.';}
+ } else {
+  $sel=isset($_POST['playlists'])&&is_array($_POST['playlists'])?$_POST['playlists']:array();
+  $config=array('title'=>trim($_POST['title']??'')?:"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>trim($_POST['subtitle']??'')?:'Choose Your Adventure','enabled'=>isset($_POST['enabled']),'allowedPlaylists'=>array_values(array_intersect($available,$sel)));
+  file_put_contents($configFile,json_encode($config,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),LOCK_EX);$msg='Jukebox settings saved.';
+ }
 }
 ?>
-<div class="container-fluid">
-<h2>Ferris Jukebox</h2>
-<p>Select the FPP playlists guests may launch. MP4-only playlists are supported; no sequence is required.</p>
-<?php if($msg):?><div class="alert alert-success"><?=htmlspecialchars($msg)?></div><?php endif;?>
-<form method="post">
-<div class="form-group"><label>Guest page title</label><input class="form-control" name="title" value="<?=htmlspecialchars($config['title'])?>"></div>
+<style>.fj-art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.fj-art-card{border:1px solid #666;border-radius:10px;padding:10px;background:#181818}.fj-preview{width:100%;aspect-ratio:1.65/1;object-fit:cover;border-radius:7px;background:#30180d;display:block}.fj-empty{display:grid;place-items:center;color:#aaa;border:1px dashed #777}.fj-art-card h5{margin:8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fj-art-card input[type=file]{width:100%;font-size:.9rem}.fj-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}</style>
+<div class="container-fluid"><h2>Ferris Jukebox</h2><p>Select the FPP playlists guests may launch and upload the artwork used for each one.</p>
+<?php if($msg):?><div class="alert alert-success"><?=htmlspecialchars($msg)?></div><?php endif;?><?php if($err):?><div class="alert alert-danger"><?=htmlspecialchars($err)?></div><?php endif;?>
+<form method="post"><div class="form-group"><label>Guest page title</label><input class="form-control" name="title" value="<?=htmlspecialchars($config['title'])?>"></div>
 <div class="form-group"><label>Subtitle</label><input class="form-control" name="subtitle" value="<?=htmlspecialchars($config['subtitle'])?>"></div>
 <div class="form-check my-3"><input class="form-check-input" type="checkbox" name="enabled" id="enabled" <?=$config['enabled']?'checked':''?>><label class="form-check-label" for="enabled">Enable guest requests</label></div>
-<h4>Allowed Playlists</h4>
-<?php if(!$available):?><div class="alert alert-warning">No playlists found. Create your MP4 playlists in FPP first.</div><?php endif;?>
+<h4>Allowed Playlists</h4><?php if(!$available):?><div class="alert alert-warning">No playlists found. Create your MP4 playlists in FPP first.</div><?php endif;?>
 <?php foreach($available as $p):?><div class="form-check py-1"><input class="form-check-input" type="checkbox" name="playlists[]" value="<?=htmlspecialchars($p)?>" id="p<?=md5($p)?>" <?=in_array($p,$config['allowedPlaylists'],true)?'checked':''?>><label class="form-check-label" for="p<?=md5($p)?>"><?=htmlspecialchars($p)?></label></div><?php endforeach;?>
-<button class="btn btn-success mt-3" type="submit">Save Jukebox Settings</button>
-</form><hr>
-<a class="btn btn-primary" target="_blank" href="plugin.php?plugin=fpp-ferris-jukebox&page=jukebox.php&nopage=1">Open Guest Jukebox</a>
-</div>
+<button class="btn btn-success mt-3" type="submit">Save Jukebox Settings</button></form><hr>
+<h3>Show Artwork</h3><p>Upload a JPEG, PNG, or WebP (maximum 8 MB). Landscape artwork around 1.65:1 fits the guest buttons best.</p>
+<div class="fj-art-grid"><?php foreach($available as $p):$af=fjArtFile($artDir,$p);?><div class="fj-art-card">
+<?php if($af):$mime=pathinfo($af,PATHINFO_EXTENSION)==='png'?'image/png':(pathinfo($af,PATHINFO_EXTENSION)==='webp'?'image/webp':'image/jpeg');?><img class="fj-preview" src="data:<?=$mime?>;base64,<?=base64_encode(file_get_contents($af))?>" alt="Artwork for <?=htmlspecialchars($p)?>"><?php else:?><div class="fj-preview fj-empty">No artwork yet</div><?php endif;?>
+<h5><?=htmlspecialchars($p)?></h5><form method="post" enctype="multipart/form-data"><input type="hidden" name="art_playlist" value="<?=htmlspecialchars($p,ENT_QUOTES)?>"><input type="file" name="artwork" accept="image/jpeg,image/png,image/webp">
+<div class="fj-actions"><button class="btn btn-primary btn-sm" type="submit">Upload / Replace</button><?php if($af):?><button class="btn btn-outline-danger btn-sm" type="submit" name="delete_art" value="1" onclick="return confirm('Remove artwork for <?=htmlspecialchars(addslashes($p),ENT_QUOTES)?>?')">Remove</button><?php endif;?></div></form></div><?php endforeach;?></div><hr>
+<a class="btn btn-primary" target="_blank" href="plugin.php?plugin=fpp-ferris-jukebox&page=jukebox.php&nopage=1">Open Guest Jukebox</a></div>
