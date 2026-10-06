@@ -35,8 +35,8 @@ function fjRequest(){
  if(empty($c['enabled'])){http_response_code(403);return json(array('ok'=>false,'message'=>'The jukebox is closed.'));}
  if(!in_array($p,$c['allowedPlaylists'],true)){http_response_code(403);return json(array('ok'=>false,'message'=>'That show is not available.'));}
  $s=fjGet('/api/fppd/status'); $now=fjCurrent($s);
- if($now!==''){http_response_code(409);return json(array('ok'=>false,'message'=>'A show is already playing.','currentPlaylist'=>$now));}
- $r=fjGet('/api/command/Start%20Playlist/'.rawurlencode($p).'/false');
+ if($now!=='' && in_array($now,$c['allowedPlaylists'],true)){http_response_code(409);return json(array('ok'=>false,'message'=>'A Jukebox show is already playing.','currentPlaylist'=>$now));}
+ $r=fjGet('/api/command/Start%20Playlist/'.rawurlencode($p).'/false/false/true');
  if($r===null){http_response_code(502);return json(array('ok'=>false,'message'=>'FPP did not accept the request.'));}
  if(isset($settings['logDirectory']))file_put_contents($settings['logDirectory'].'/plugin-fpp-ferris-jukebox.log',date('c').' requested approved playlist: '.$p."\n",FILE_APPEND|LOCK_EX);
  return json(array('ok'=>true,'playlist'=>$p));
