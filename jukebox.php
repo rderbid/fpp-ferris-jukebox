@@ -1,5 +1,5 @@
 <?php
-$c=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array());
+$c=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array(),'artworkSettings'=>array());
 $f=__DIR__.'/jukebox-config.json'; if(is_file($f)){ $x=json_decode(file_get_contents($f),true); if(is_array($x))$c=array_merge($c,$x); }
 $shell=''; $sf=__DIR__.'/assets/jukebox-shell.jpg'; if(is_file($sf)){ $shell='data:image/jpeg;base64,'.base64_encode(file_get_contents($sf)); }
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -14,7 +14,7 @@ h1{font-family:Georgia,serif;font-size:clamp(1.7rem,7vw,3rem);line-height:1;marg
 <div id="status" class="status">Checking the waters…</div>
 <?php if(empty($c['enabled'])):?><div class="closed">The Jukebox is closed for now. Check back soon, matey.</div>
 <?php elseif(empty($c['allowedPlaylists'])):?><div class="closed">No adventures have been opened yet.</div>
-<?php else:?><div class="grid"><?php foreach($c['allowedPlaylists'] as $p):$art='';foreach(array('jpg','jpeg','png','webp') as $ext){$af=__DIR__.'/artwork/'.$p.'.'.$ext;if(is_file($af)){$mime=$ext==='png'?'image/png':($ext==='webp'?'image/webp':'image/jpeg');$art='data:'.$mime.';base64,'.base64_encode(file_get_contents($af));break;}}?><button class="show <?=$art?'':'noart'?>" data-playlist="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php if($art):?><img src="<?=htmlspecialchars($art,ENT_QUOTES)?>" alt="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php else:?><span><?=htmlspecialchars($p)?></span><?php endif;?></button><?php endforeach;?></div><?php endif;?>
+<?php else:?><div class="grid"><?php foreach($c['allowedPlaylists'] as $p):$art='';foreach(array('jpg','jpeg','png','webp') as $ext){$af=__DIR__.'/artwork/'.$p.'.'.$ext;if(is_file($af)){$mime=$ext==='png'?'image/png':($ext==='webp'?'image/webp':'image/jpeg');$art='data:'.$mime.';base64,'.base64_encode(file_get_contents($af));break;}}?><button class="show <?=$art?'':'noart'?>" data-playlist="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php if($art):$as=$c['artworkSettings'][$p]??array('x'=>50,'y'=>50,'zoom'=>100);?><img src="<?=htmlspecialchars($art,ENT_QUOTES)?>" alt="<?=htmlspecialchars($p,ENT_QUOTES)?>" style="object-position:<?=$as['x']?>% <?=$as['y']?>%;transform:scale(<?=$as['zoom']/100?>)"><?php else:?><span><?=htmlspecialchars($p)?></span><?php endif;?></button><?php endforeach;?></div><?php endif;?>
 <div class="foot">One adventure at a time • The regular show resumes automatically</div></main><script>
 const box=document.getElementById('status'),buttons=[...document.querySelectorAll('.show')];let requesting=false,remaining=null,playing='';
 const fmt=n=>{n=Math.max(0,Math.round(n||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
