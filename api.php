@@ -33,7 +33,8 @@ function fjStatus(){
  // cannot identify a guest request. Lock only when this plugin started the active show.
  $busy=($j!=='' && $p===$j);
  if($j!=='' && $p!==$j && is_file(fjLockFile())) @unlink(fjLockFile());
- return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$busy,'currentPlaylist'=>$p,'jukeboxPlaylist'=>$busy?$j:''));
+ $remaining=(is_array($s)&&isset($s['seconds_remaining']))?max(0,(int)$s['seconds_remaining']):null;
+ return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$busy,'currentPlaylist'=>$p,'jukeboxPlaylist'=>$busy?$j:'','secondsRemaining'=>$busy?$remaining:null));
 }
 function fjRequest(){
  global $settings;
