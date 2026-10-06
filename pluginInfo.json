@@ -1,0 +1,35 @@
+{
+  "repoName": "fpp-ferris-jukebox",
+  "name": "Ferris Jukebox",
+  "author": "Ferris Derbidge",
+  "description": "A guest-safe, mobile-friendly FPP jukebox for approved playlists and MP4 projection shows.",
+  "homeURL": "https://github.com/rderbid/fpp-ferris-jukebox",
+  "srcURL": "https://github.com/rderbid/fpp-ferris-jukebox.git",
+  "bugURL": "https://github.com/rderbid/fpp-ferris-jukebox/issues",
+  "allowUpdates": 1,
+  "releaseNotesStyle": "gitHistory",
+  "privacy": {
+    "summary": "Runs on this FPP device only. Guests can request only playlists explicitly approved by the FPP administrator.",
+    "sends": [],
+    "collects": [],
+    "sensors": [],
+    "remoteAccess": "none",
+    "systemChanges": [],
+    "closedCode": false,
+    "other": "No cloud service, analytics, accounts, or external network access."
+  },
+  "versions": [
+    {
+      "minFPPVersion": "10.0",
+      "maxFPPVersion": "0",
+      "branch": "main",
+      "sha": ""
+    }
+  ],
+  "dependencies": {
+    "plugins": [],
+    "packages": [],
+    "python": [],
+    "scripts": []
+  }
+}
