@@ -16,10 +16,13 @@ h1{font-family:Georgia,serif;font-size:clamp(1.7rem,7vw,3rem);line-height:1;marg
 <?php elseif(empty($c['allowedPlaylists'])):?><div class="closed">No adventures have been opened yet.</div>
 <?php else:?><div class="grid"><?php foreach($c['allowedPlaylists'] as $p):$art='';foreach(array('jpg','jpeg','png','webp') as $ext){$af=__DIR__.'/artwork/'.$p.'.'.$ext;if(is_file($af)){$mime=$ext==='png'?'image/png':($ext==='webp'?'image/webp':'image/jpeg');$art='data:'.$mime.';base64,'.base64_encode(file_get_contents($af));break;}}?><button class="show <?=$art?'':'noart'?>" data-playlist="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php if($art):?><img src="<?=htmlspecialchars($art,ENT_QUOTES)?>" alt="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php else:?><span><?=htmlspecialchars($p)?></span><?php endif;?></button><?php endforeach;?></div><?php endif;?>
 <div class="foot">One adventure at a time • The regular show resumes automatically</div></main><script>
-const box=document.getElementById('status'),buttons=[...document.querySelectorAll('.show')];let requesting=false;
+const box=document.getElementById('status'),buttons=[...document.querySelectorAll('.show')];let requesting=false,remaining=null,playing='';
+const fmt=n=>{n=Math.max(0,Math.round(n||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+const paint=()=>{if(remaining!==null&&playing)box.textContent='🎬 Now Playing: '+playing+' • ⏳ '+fmt(remaining)+' remaining'};
+setInterval(()=>{if(remaining!==null&&remaining>0){remaining--;paint()}},1000);
 const lock=x=>buttons.forEach(b=>b.disabled=x);
 async function refresh(){try{const r=await fetch('/api/plugin/fpp-ferris-jukebox/status',{cache:'no-store'}),s=await r.json();
-if(!s.enabled){box.textContent='🏴‍☠️ The Jukebox is closed for now.';lock(true)}else if(s.busy){box.textContent='🎬 Now Playing: '+(s.currentPlaylist||'Current Show');lock(true)}else if(!requesting){box.textContent='⚓ Ready — choose a show!';lock(false)}}catch(e){box.textContent='⚠️ Jukebox connection unavailable';lock(true)}}
+if(!s.enabled){box.textContent='🏴‍☠️ The Jukebox is closed for now.';lock(true)}else if(s.busy){playing=s.currentPlaylist||'Current Show';remaining=Number.isFinite(Number(s.secondsRemaining))?Number(s.secondsRemaining):null;if(remaining!==null)paint();else box.textContent='🎬 Now Playing: '+playing;lock(true)}else if(!requesting){remaining=null;playing='';box.textContent='⚓ Ready — choose a show!';lock(false)}}catch(e){box.textContent='⚠️ Jukebox connection unavailable';lock(true)}}
 buttons.forEach(b=>b.onclick=async()=>{if(requesting)return;requesting=true;lock(true);box.textContent='🏴‍☠️ Launching '+b.dataset.playlist+'…';
 try{const r=await fetch('/api/plugin/fpp-ferris-jukebox/request/'+encodeURIComponent(b.dataset.playlist),{method:'POST'}),d=await r.json();if(!r.ok)throw new Error(d.message||'Request failed');box.textContent='🎬 Now Playing: '+b.dataset.playlist}
 catch(e){box.textContent='⚠️ '+e.message;setTimeout(refresh,1200)}finally{requesting=false}});
