@@ -3,7 +3,7 @@ $c=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose You
 $f=__DIR__.'/jukebox-config.json'; if(is_file($f)){ $x=json_decode(file_get_contents($f),true); if(is_array($x))$c=array_merge($c,$x); }
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title><?=htmlspecialchars($c['title'])?></title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,sans-serif;background:radial-gradient(circle at top,#4a2918,#17100c 48%,#080706);color:#fff}
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,sans-serif;background:#07111b url('assets/jukebox-shell.jpg') center top/760px auto repeat-y;color:#fff}
 .wrap{max-width:760px;margin:auto;padding:14px 10px 40px;text-align:center;border-left:6px solid #5b3518;border-right:6px solid #5b3518;box-shadow:inset 10px 0 16px #0008,inset -10px 0 16px #0008}.flag{font-size:34px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:#e5bd72}
 h1{font-family:Georgia,serif;font-size:clamp(1.7rem,7vw,3rem);line-height:1;margin:.2em 0;color:#ffd27a;text-shadow:0 3px 0 #5e2c13}.sub{display:inline-block;font:700 1rem Georgia,serif;color:#2b170a;background:#d7aa63;padding:5px 16px;margin-bottom:10px;border-radius:4px}
 .status{padding:9px 10px;border:1px solid #8c673f;border-radius:10px;background:#1d1713;margin:0 auto 10px;min-height:40px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
