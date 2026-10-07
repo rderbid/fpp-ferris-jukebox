@@ -1,5 +1,5 @@
 <?php
-$c=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array(),'artworkSettings'=>array(),'scrollMessage'=>'Welcome aboard! Choose an adventure below.');
+$c=array('title'=>"Ferris & Heidi's Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array(),'artworkSettings'=>array(),'scrollMessage'=>'Welcome aboard! Choose an adventure below.');
 $f=__DIR__.'/jukebox-config.json'; if(is_file($f)){ $x=json_decode(file_get_contents($f),true); if(is_array($x))$c=array_merge($c,$x); }
 $shell=''; $sf=__DIR__.'/assets/jukebox-shell.jpg'; if(is_file($sf)){ $shell='data:image/jpeg;base64,'.base64_encode(file_get_contents($sf)); }
 function fjDuration($p){
