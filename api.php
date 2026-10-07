@@ -36,6 +36,8 @@ function fjStatus(){
  $remaining=(is_array($s)&&isset($s['seconds_remaining']))?max(0,(int)$s['seconds_remaining']):null;
  return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$busy,'currentPlaylist'=>$p,'jukeboxPlaylist'=>$busy?$j:'','secondsRemaining'=>$busy?$remaining:null));
 }
+function fjStatsFile(){return __DIR__.'/jukebox-stats.json';}
+function fjRecordPlay($p){$f=fjStatsFile();$d=array('plays'=>array(),'history'=>array());if(is_file($f)){$x=json_decode(file_get_contents($f),true);if(is_array($x))$d=array_merge($d,$x);}if(!isset($d['plays'][$p]))$d['plays'][$p]=0;$d['plays'][$p]++;$d['history'][]=array('playlist'=>$p,'time'=>date('c'));file_put_contents($f,json_encode($d,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),LOCK_EX);}
 function fjRequest(){
  global $settings;
  $c=fjConfig(); $p=rawurldecode((string)params('playlist'));
@@ -50,6 +52,7 @@ function fjRequest(){
  // selection once, then resumes the original playlist at the exact paused position.
  $r=fjGet('/api/command/Insert%20Playlist%20Immediate/'.rawurlencode($p).'/0/0/false');
  if($r===null){if(is_file(fjLockFile()))@unlink(fjLockFile());http_response_code(502);return json(array('ok'=>false,'message'=>'FPP did not accept the request.'));}
+ fjRecordPlay($p);
  if(isset($settings['logDirectory']))file_put_contents($settings['logDirectory'].'/plugin-fpp-ferris-jukebox.log',date('c').' requested approved playlist: '.$p."\n",FILE_APPEND|LOCK_EX);
  return json(array('ok'=>true,'playlist'=>$p));
 }
