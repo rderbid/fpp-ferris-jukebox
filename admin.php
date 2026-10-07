@@ -1,7 +1,7 @@
 <?php
 $configFile=__DIR__.'/jukebox-config.json';
 $artDir=__DIR__.'/artwork'; if(!is_dir($artDir))@mkdir($artDir,0775,true);
-$config=array('title'=>"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array(),'artworkSettings'=>array(),'scrollMessage'=>'Welcome aboard! Choose an adventure below.');
+$config=array('title'=>"Ferris & Heidi's Pirate Cove",'subtitle'=>'Choose Your Adventure','enabled'=>true,'allowedPlaylists'=>array(),'artworkSettings'=>array(),'scrollMessage'=>'Welcome aboard! Choose an adventure below.');
 if(is_file($configFile)){ $x=json_decode(file_get_contents($configFile),true); if(is_array($x))$config=array_merge($config,$x); }
 $dir=isset($settings['playlistDirectory'])?$settings['playlistDirectory']:'/home/fpp/media/playlists';
 $available=array(); foreach(glob($dir.'/*.json')?:array() as $f)$available[]=pathinfo($f,PATHINFO_FILENAME);
@@ -19,7 +19,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
   else{foreach(array('jpg','jpeg','png','webp') as $e)@unlink($artDir.'/'.$p.'.'.$e);if(fjSafeUpload($_FILES['artwork']['tmp_name'],$artDir.'/'.$p,''))$msg='Artwork updated for '.$p;else $err='That file is not a supported image.';}
  } else {
   $sel=isset($_POST['playlists'])&&is_array($_POST['playlists'])?$_POST['playlists']:array();
-  $config=array('title'=>trim($_POST['title']??'')?:"Ferris & Heidi's Haunted Pirate Cove",'subtitle'=>trim($_POST['subtitle']??'')?:'Choose Your Adventure','enabled'=>isset($_POST['enabled']),'allowedPlaylists'=>array_values(array_intersect($available,$sel)),'artworkSettings'=>$config['artworkSettings']??array(),'scrollMessage'=>trim($_POST['scrollMessage']??''));
+  $config=array('title'=>trim($_POST['title']??'')?:"Ferris & Heidi's Pirate Cove",'subtitle'=>trim($_POST['subtitle']??'')?:'Choose Your Adventure','enabled'=>isset($_POST['enabled']),'allowedPlaylists'=>array_values(array_intersect($available,$sel)),'artworkSettings'=>$config['artworkSettings']??array(),'scrollMessage'=>trim($_POST['scrollMessage']??''));
   file_put_contents($configFile,json_encode($config,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),LOCK_EX);$msg='Jukebox settings saved.';
  }
 }
