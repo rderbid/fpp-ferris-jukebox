@@ -10,11 +10,14 @@ function fjArtFile($dir,$p){foreach(array('jpg','jpeg','png','webp') as $e){$f=$
 function fjSafeUpload($tmp,$dest,$ext){$info=@getimagesize($tmp);if(!$info)return false;$ok=array(IMAGETYPE_JPEG=>'jpg',IMAGETYPE_PNG=>'png',IMAGETYPE_WEBP=>'webp');if(!isset($ok[$info[2]]))return false;return @move_uploaded_file($tmp,$dest.'.'.$ok[$info[2]]);}
 $msg='';$err='';$statsFile=__DIR__.'/jukebox-stats.json';
 if(isset($_GET['download_backup'])){
+ // FPP's plugin wrapper may already have started output buffering. Clear it so the
+ // browser receives a clean attachment response instead of rendering the JSON.
+ while(ob_get_level()>0)@ob_end_clean();
  $bundle=array('format'=>'Ferris Jukebox Backup','version'=>2,'created'=>date('c'),'files'=>array());
  foreach(array('jukebox-config.json','jukebox-stats.json') as $bn){$src=__DIR__.'/'.$bn;if(is_file($src))$bundle['files'][$bn]=base64_encode(file_get_contents($src));}
  foreach(array('artwork','assets') as $dn){foreach(glob(__DIR__.'/'.$dn.'/*')?:array() as $src){if(is_file($src))$bundle['files'][$dn.'/'.basename($src)]=base64_encode(file_get_contents($src));}}
  $body=json_encode($bundle,JSON_UNESCAPED_SLASHES);
- if($body===false){$err='Could not create the backup file.';}else{header('Content-Type: application/json');header('Content-Disposition: attachment; filename="ferris-jukebox-backup-'.date('Ymd-His').'.fjb"');header('Content-Length: '.strlen($body));echo $body;exit;}
+ if($body===false){$err='Could not create the backup file.';}else{header('Content-Type: application/octet-stream');header('Content-Transfer-Encoding: binary');header('Content-Disposition: attachment; filename="ferris-jukebox-backup-'.date('Ymd-His').'.fjb"');header('Content-Length: '.strlen($body));header('Cache-Control: no-store, no-cache, must-revalidate');echo $body;flush();exit;}
 }
 if($_SERVER['REQUEST_METHOD']==='POST'){
  if(isset($_POST['restore_backup'])){
