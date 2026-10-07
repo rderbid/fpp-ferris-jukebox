@@ -2,7 +2,9 @@
 function getEndpointsfppferrisjukebox(){
  return array(
   array('method'=>'GET','endpoint'=>'status','callback'=>'fjStatus'),
-  array('method'=>'POST','endpoint'=>'request/:playlist','callback'=>'fjRequest')
+  array('method'=>'POST','endpoint'=>'request/:playlist','callback'=>'fjRequest'),
+  array('method'=>'POST','endpoint'=>'queue/remove/:position','callback'=>'fjQueueRemove'),
+  array('method'=>'POST','endpoint'=>'queue/clear','callback'=>'fjQueueClear')
  );
 }
 function fjConfig(){
@@ -61,6 +63,8 @@ function fjStatus(){
 }
 function fjStatsFile(){return __DIR__.'/jukebox-stats.json';}
 function fjRecordPlay($p){$f=fjStatsFile();$d=array('plays'=>array(),'history'=>array());if(is_file($f)){$x=json_decode(file_get_contents($f),true);if(is_array($x))$d=array_merge($d,$x);}if(!isset($d['plays'][$p]))$d['plays'][$p]=0;$d['plays'][$p]++;$d['history'][]=array('playlist'=>$p,'time'=>date('c'));file_put_contents($f,json_encode($d,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES),LOCK_EX);}
+function fjQueueRemove(){ $q=fjQueue();$i=(int)params('position');if($i<0||$i>=count($q)){http_response_code(404);return json(array('ok'=>false,'message'=>'Queue item not found.'));}$removed=$q[$i];array_splice($q,$i,1);fjSaveQueue($q);return json(array('ok'=>true,'removed'=>$removed,'queue'=>$q));}
+function fjQueueClear(){fjSaveQueue(array());return json(array('ok'=>true,'queue'=>array()));}
 function fjRequest(){
  global $settings;
  $c=fjConfig(); $p=rawurldecode((string)params('playlist'));
