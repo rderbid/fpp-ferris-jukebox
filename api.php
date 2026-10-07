@@ -43,7 +43,20 @@ function fjStatus(){
    if(fjStartShow($next)){$s=fjGet('/api/fppd/status');$p=fjCurrent($s);$j=$next;$busy=true;}else{$j='';$busy=false;}
   }
  }
- $remaining=(is_array($s)&&isset($s['seconds_remaining']))?max(0,(int)$s['seconds_remaining']):null;
+ $remaining=null;
+ if($busy&&is_array($s)){
+  // Insert Playlist Immediate can report the parent/scheduled playlist's remaining time.
+  // For our single-MP4 guest playlists, calculate against the guest playlist duration instead.
+  $elapsed=isset($s['seconds_elapsed'])?max(0,(int)$s['seconds_elapsed']):null;
+  $pi=fjGet('/api/playlist/'.rawurlencode($j));$total=null;
+  if(is_array($pi)){
+   if(isset($pi['playlistInfo']['total_duration']))$total=(float)$pi['playlistInfo']['total_duration'];
+   elseif(isset($pi['total_duration']))$total=(float)$pi['total_duration'];
+   elseif(isset($pi['mainPlaylist'])&&is_array($pi['mainPlaylist'])){$total=0;foreach($pi['mainPlaylist'] as $item)$total+=(float)($item['duration']??0);}
+  }
+  if($total!==null&&$total>0&&$elapsed!==null)$remaining=max(0,(int)ceil($total-$elapsed));
+  elseif(isset($s['seconds_remaining']))$remaining=max(0,(int)$s['seconds_remaining']);
+ }
  return json(array('ok'=>$s!==null,'enabled'=>!empty($c['enabled']),'busy'=>$busy,'currentPlaylist'=>$p,'jukeboxPlaylist'=>$busy?$j:'','secondsRemaining'=>$busy?$remaining:null,'queueEnabled'=>!empty($c['queueEnabled']),'queue'=>$q,'queueCount'=>count($q),'queueMax'=>max(1,(int)($c['queueMax']??3))));
 }
 function fjStatsFile(){return __DIR__.'/jukebox-stats.json';}
