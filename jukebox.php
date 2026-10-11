@@ -28,7 +28,51 @@ h1{font-family:Georgia,serif;font-size:clamp(1.7rem,7vw,3rem);line-height:1;marg
 <?php if(empty($c['enabled'])):?><div class="closed">The Jukebox is closed for now. Check back soon, matey.</div>
 <?php elseif(empty($c['allowedPlaylists'])):?><div class="closed">No adventures have been opened yet.</div>
 <?php else:?><div class="grid"><?php foreach($c['allowedPlaylists'] as $p):$art='';foreach(array('jpg','jpeg','png','webp') as $ext){$af=__DIR__.'/artwork/'.$p.'.'.$ext;if(is_file($af)){$art='plugin.php?plugin=fpp-ferris-jukebox&page=asset.php&nopage=1&type=artwork&file='.rawurlencode($p.'.'.$ext);break;}}?><button class="show <?=$art?'':'noart'?>" data-playlist="<?=htmlspecialchars($p,ENT_QUOTES)?>"><?php $dur=fjDuration($p);if($art):$as=$c['artworkSettings'][$p]??array('x'=>50,'y'=>50,'zoom'=>100);?><img loading="lazy" decoding="async" src="<?=htmlspecialchars($art,ENT_QUOTES)?>" alt="<?=htmlspecialchars($p,ENT_QUOTES)?>" style="object-position:<?=$as['x']?>% <?=$as['y']?>%;transform:scale(<?=$as['zoom']/100?>)"><?php else:?><span><?=htmlspecialchars($p)?></span><?php endif;?><?php if($p===$topShow):?><b class="popular">🔥 Most Popular</b><?php endif;?><?php if($dur):?><b class="duration"><?=$dur?></b><?php endif;?></button><?php endforeach;?></div><?php endif;?>
-<div class="donate-wrap"><div class="donate-label">Enjoyed the shows? Help us share the joy! Tap the QR code below to support Little Lambs Foundation for Kids.</div><?php if($donateQr):?><a href="https://venmo.com/u/littlelambsofutah" target="_blank" rel="noopener"><img class="donate-qr" src="<?=htmlspecialchars($donateQr,ENT_QUOTES)?>" alt="Little Lambs Foundation for Kids Venmo QR code"></a><?php endif;?></div><div class="foot">One adventure at a time • The regular show resumes automatically</div></main><script>
+
+
+<div class="donate-wrap">
+
+  <div style="text-align:center;padding:12px;">
+
+    <div style="font-size:1.1rem;font-weight:bold;">
+
+      ❤️ Enjoyed the show?
+
+    </div>
+
+    <div style="margin:8px 0;">
+
+      Help support Little Lambs Foundation for Kids!
+
+    </div>
+
+    <a href="https://venmo.com/u/littlelambsofutah"
+
+       target="_blank"
+
+       rel="noopener noreferrer"
+
+       style="display:inline-block;background:#008CFF;
+
+       color:white;padding:12px 24px;border-radius:10px;
+
+       font-weight:bold;text-decoration:none;">
+
+       ❤️ Donate with Venmo
+
+    </a>
+
+    <div style="font-size:0.8rem;margin-top:8px;">
+
+      Donations are optional. Thank you for your support!
+
+    </div>
+
+  </div>
+
+</div>
+
+<?php if($donateQr):?><a href="https://venmo.com/u/littlelambsofutah" target="_blank" rel="noopener"><img class="donate-qr" src="<?=htmlspecialchars($donateQr,ENT_QUOTES)?>" alt="Little Lambs Foundation for Kids Venmo QR code"></a><?php endif;?></div><div class="foot">One adventure at a time • The regular show resumes automatically</div></main><script>
 const clock=document.getElementById('clock');const tickClock=()=>{clock.textContent=new Date().toLocaleTimeString([],{hour:'numeric',minute:'2-digit'})};tickClock();setInterval(tickClock,1000);
 const box=document.getElementById('status'),qbar=document.getElementById('queuebar'),buttons=[...document.querySelectorAll('.show')];let requesting=false,remaining=null,playing='';
 const fmt=n=>{n=Math.max(0,Math.round(n||0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};

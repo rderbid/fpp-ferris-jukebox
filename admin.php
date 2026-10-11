@@ -45,12 +45,11 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 ?>
 <style>.fj-art-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.fj-art-card{border:1px solid #666;border-radius:10px;padding:10px;background:#181818}.fj-preview{width:100%;aspect-ratio:1.28/1;object-fit:cover;border-radius:7px;background:#30180d;display:block}.fj-empty{display:grid;place-items:center;color:#aaa;border:1px dashed #777}.fj-art-card h5{margin:8px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.fj-art-card input[type=file]{width:100%;font-size:.9rem}.fj-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.fj-controls{margin-top:10px}.fj-control{display:grid;grid-template-columns:62px 1fr 42px;gap:6px;align-items:center;margin:5px 0}.fj-control input{width:100%}.fj-val{text-align:right;font-size:.8rem} .fj-stat-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}.fj-stat-box{border:1px solid #555;border-radius:9px;padding:10px 6px;text-align:center;background:#202027}.fj-stat-box strong{display:block;font-size:1.45rem;line-height:1.1}.fj-stat-box span{display:block;font-size:.78rem;color:#bbb;margin-top:3px}.fj-stats-table{width:100%;table-layout:fixed}.fj-stats-table th,.fj-stats-table td{padding:7px 5px;vertical-align:middle}.fj-stats-table th:nth-child(1),.fj-stats-table td:nth-child(1){width:9%;text-align:center}.fj-stats-table th:nth-child(2),.fj-stats-table td:nth-child(2){width:43%;word-break:normal}.fj-stats-table th:nth-child(n+3),.fj-stats-table td:nth-child(n+3){text-align:center}.fj-stats-table th{font-size:.82rem;white-space:nowrap}.fj-stat-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}@media(max-width:520px){.fj-stats-table th,.fj-stats-table td{font-size:.78rem;padding:6px 3px}.fj-stats-table th:nth-child(2),.fj-stats-table td:nth-child(2){width:39%}.fj-stat-actions .btn{font-size:.85rem;padding:.45rem .65rem}} </style>
-<div class="container-fluid"><h2>Ferris Jukebox</h2><p>Select the FPP playlists guests may launch and upload the artwork used for each one.</p>
+<div class="container-fluid"><h2>Ferris Jukebox</h2><div style="margin:15px 0"><a class="btn btn-primary btn-lg" target="_blank" href="plugin.php?plugin=fpp-ferris-jukebox&page=jukebox.php&nopage=1">Open Guest Jukebox</a></div><p>Select the FPP playlists guests may launch and upload the artwork used for each one.</p>
 <?php if($msg):?><div class="alert alert-success"><?=htmlspecialchars($msg)?></div><?php endif;?><?php if($err):?><div class="alert alert-danger"><?=htmlspecialchars($err)?></div><?php endif;?>
 <form method="post"><div class="form-group"><label>Guest page title</label><input class="form-control" name="title" value="<?=htmlspecialchars($config['title'])?>"></div>
 <div class="form-group"><label>Subtitle</label><input class="form-control" name="subtitle" value="<?=htmlspecialchars($config['subtitle'])?>"></div><div class="form-group"><label>Scrolling guest message</label><input class="form-control" name="scrollMessage" maxlength="240" value="<?=htmlspecialchars($config['scrollMessage']??'')?>" placeholder="Welcome aboard! Choose an adventure below."><small class="form-text text-muted">Leave blank to hide the scrolling message bar.</small></div>
-<div class="form-check my-3"><input class="form-check-input" type="checkbox" name="enabled" id="enabled" <?=$config['enabled']?'checked':''?>><label class="form-check-label" for="enabled">Enable guest requests</label></div><div class="card p-3 my-3"><h4>Guest Queue</h4><div class="form-check mb-2"><input class="form-check-input" type="checkbox" name="queueEnabled" id="queueEnabled" <?=!empty($config['queueEnabled'])?'checked':''?>><label class="form-check-label" for="queueEnabled">Enable guest queue</label></div><div class="form-group"><label for="queueMax">Maximum shows waiting in queue</label><input class="form-control" style="max-width:120px" type="number" min="1" max="10" name="queueMax" id="queueMax" value="<?=max(1,min(10,(int)($config['queueMax']??3)))?>"><small class="form-text text-muted">Does not include the show currently playing.</small></div><div class="form-check"><input class="form-check-input" type="checkbox" name="allowDuplicateQueue" id="allowDuplicateQueue" <?=!empty($config['allowDuplicateQueue'])?'checked':''?>><label class="form-check-label" for="allowDuplicateQueue">Allow the same show more than once in the queue</label></div></div>
-<h4>Allowed Playlists</h4><?php if(!$available):?><div class="alert alert-warning">No playlists found. Create your MP4 playlists in FPP first.</div><?php endif;?>
+<div class="form-check my-3"><input class="form-check-input" type="checkbox" name="enabled" id="enabled" <?=$config['enabled']?'checked':''?>><label class="form-check-label" for="enabled">Enable guest requests</label></div><h4>Allowed Playlists</h4><?php if(!$available):?><div class="alert alert-warning">No playlists found. Create your MP4 playlists in FPP first.</div><?php endif;?>
 <?php foreach($available as $p):?><div class="form-check py-1"><input class="form-check-input" type="checkbox" name="playlists[]" value="<?=htmlspecialchars($p)?>" id="p<?=md5($p)?>" <?=in_array($p,$config['allowedPlaylists'],true)?'checked':''?>><label class="form-check-label" for="p<?=md5($p)?>"><?=htmlspecialchars($p)?></label></div><?php endforeach;?>
 <button class="btn btn-success mt-3" type="submit">Save Jukebox Settings</button></form><hr>
 <h3>Live Queue</h3><div id="fj-live-queue" class="card p-3 mb-3"><div id="fj-now-playing">Loading…</div><div id="fj-queue-list" class="mt-2"></div><button id="fj-clear-queue" type="button" class="btn btn-danger btn-sm mt-2" style="display:none;max-width:140px">Clear Queue</button></div><hr>
@@ -68,3 +67,35 @@ async function fjQueueRemove(i){await fetch('/api/plugin/fpp-ferris-jukebox/queu
 document.getElementById('fj-clear-queue').onclick=async()=>{if(!confirm('Clear all waiting shows from the guest queue?'))return;await fetch('/api/plugin/fpp-ferris-jukebox/queue/clear',{method:'POST'});fjQueueRefresh()};
 fjQueueRefresh();setInterval(fjQueueRefresh,2500);
 </script><script>document.querySelectorAll('.fj-art-card').forEach(card=>{const img=card.querySelector('img.fj-preview'),ranges=[...card.querySelectorAll('.fj-range')];if(!img||ranges.length<3)return;const vals=[...card.querySelectorAll('.fj-val')];const draw=()=>{const x=+ranges[0].value,y=+ranges[1].value,z=+ranges[2].value;img.style.objectPosition=x+'% '+y+'%';img.style.transform='scale('+(z/100)+')';vals[0].textContent=x+'%';vals[1].textContent=y+'%';vals[2].textContent=z+'%'};ranges.forEach(r=>r.addEventListener('input',draw));const reset=card.querySelector('.fj-reset');if(reset)reset.addEventListener('click',()=>{ranges[0].value=50;ranges[1].value=50;ranges[2].value=100;draw()});draw()});</script>
+
+
+<script>
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  const heading = [...document.querySelectorAll('h3')]
+
+    .find(h => h.textContent.trim() === 'Jukebox Statistics');
+
+
+
+  if (!heading) return;
+
+
+
+  const stats = heading.closest('.card');
+
+  const main = document.querySelector('.container-fluid');
+
+
+
+  if (stats && main && main.contains(stats)) {
+
+    main.prepend(stats);
+
+  }
+
+});
+
+</script>
+
